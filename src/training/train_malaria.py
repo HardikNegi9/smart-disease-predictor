@@ -165,14 +165,12 @@ def train():
             inputs = inputs.to(device)
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
-            y_true.extend(labels.cpu().numpy().tolist())
+            y_true.extend(labels.numpy().tolist())
             y_pred.extend(preds.cpu().numpy().tolist())
 
-    labels = list(range(len(train_ds.classes)))
     log_and_save_confusion_matrix(
         y_true=y_true,
         y_pred=y_pred,
-        labels=labels,
         class_names=train_ds.classes,
         png_path=os.path.join("models", "malaria_confusion_matrix.png"),
         logger=logging,
