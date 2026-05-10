@@ -16,6 +16,8 @@ import os
 import logging
 import yaml
 import time
+import copy
+from src.training.evaluation_utils import log_and_save_confusion_matrix
 
 logging.basicConfig(
     level=logging.INFO,
@@ -96,6 +98,7 @@ def train():
 
     # Training Loop
     best_acc = 0.0
+    best_state_dict = None
     for epoch in range(cfg["epochs"]):
         logging.info(f"Epoch {epoch+1}/{cfg['epochs']}")
         
@@ -143,12 +146,37 @@ def train():
         # Save best model
         if val_acc > best_acc:
             best_acc = val_acc
+            best_state_dict = copy.deepcopy(model.state_dict())
             os.makedirs("models", exist_ok=True)
             torch.save({
                 'model_state_dict': model.state_dict(),
                 'class_to_idx': train_ds.class_to_idx
             }, "models/malaria.pth")
             logging.info(f"Best model saved with accuracy: {best_acc:.4f}")
+
+    if best_state_dict is not None:
+        model.load_state_dict(best_state_dict)
+
+    model.eval()
+    y_true = []
+    y_pred = []
+    with torch.no_grad():
+        for inputs, labels in val_loader:
+            inputs = inputs.to(device)
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            y_true.extend(labels.cpu().numpy().tolist())
+            y_pred.extend(preds.cpu().numpy().tolist())
+
+    labels = list(range(len(train_ds.classes)))
+    log_and_save_confusion_matrix(
+        y_true=y_true,
+        y_pred=y_pred,
+        labels=labels,
+        class_names=train_ds.classes,
+        png_path=os.path.join("models", "malaria_confusion_matrix.png"),
+        logger=logging,
+    )
 
 if __name__ == "__main__":
     train()
