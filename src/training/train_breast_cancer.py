@@ -17,11 +17,13 @@ from sklearn.metrics import accuracy_score, classification_report
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from src.utils.preprocess import preprocess_breast_cancer
+from src.training.evaluation_utils import log_and_save_confusion_matrix
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 CSV_PATH = os.path.join("data", "breast_cancer.csv")
 MODEL_PATH = os.path.join("models", "breast_cancer.pkl")
+CM_PATH = os.path.join("models", "breast_cancer_confusion_matrix.png")
 
 
 def main():
@@ -32,9 +34,18 @@ def main():
     model = SVC(C=10, gamma=0.01, probability=True)
     model.fit(X_train, y_train)
 
-    acc = accuracy_score(y_test, model.predict(X_test))
+    y_pred = model.predict(X_test)
+    acc = accuracy_score(y_test, y_pred)
     logging.info(f"Test Accuracy: {acc * 100:.2f}%")
-    logging.info(f"\n{classification_report(y_test, model.predict(X_test))}")
+    logging.info(f"\n{classification_report(y_test, y_pred)}")
+    log_and_save_confusion_matrix(
+        y_true=y_test,
+        y_pred=y_pred,
+        labels=model.classes_,
+        class_names=[str(c) for c in model.classes_],
+        png_path=CM_PATH,
+        logger=logging,
+    )
 
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     

@@ -42,7 +42,33 @@
   python src/training/train_diabetes.py
   ```
 
-#### 3. Run Web Application
+#### 3. Get Training Results (Terminal + PNG)
+- During training, terminal output includes:
+  - Test Accuracy
+  - Classification Report
+  - Confusion Matrix values
+- A confusion matrix PNG is also saved in `models/` for each trained model.
+
+- **Example: run all models and get all result artifacts**
+  ```bash
+  python src/training/train_all.py
+  ```
+
+- **List saved confusion matrix PNG files**
+  ```bash
+  ls models/*confusion_matrix.png
+  ```
+
+- **Expected confusion matrix files**
+  - `models/diabetes_confusion_matrix.png`
+  - `models/heart_confusion_matrix.png`
+  - `models/breast_cancer_confusion_matrix.png`
+  - `models/kidney_confusion_matrix.png`
+  - `models/liver_confusion_matrix.png`
+  - `models/malaria_confusion_matrix.png`
+  - `models/pneumonia_confusion_matrix.png`
+
+#### 4. Run Web Application
 - **Start Flask Server**:
   ```bash
   python app.py
